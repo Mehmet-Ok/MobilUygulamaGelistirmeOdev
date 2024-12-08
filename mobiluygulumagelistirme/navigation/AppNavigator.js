@@ -1,18 +1,39 @@
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { LoginScreen } from '../screens/LoginScreen';
-import { AdminDashboardScreen } from '../screens/AdminDashboard';
-import { UserDashboardScreen } from '../screens/UserDashboard';
-import RegisterScreen from '../screens/RegisterScreen';
+// src/navigation/AppNavigator.js
+import React, { useContext } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { AuthContext } from '../context/AuthContext';
 
-const Stack = createNativeStackNavigator();
+import LoginScreen from '../screens/LoginScreen';
+import SignUpScreen from '../screens/SignUpScreen';
+import UserDashboard from '../screens/UserDashboard';
+import AdminDashboard from '../screens/AdminDashboard';
+import UserList from '../screens/UserList';
+import EditUser from '../screens/EditUser';
 
-export function AppNavigator() {
-    return (
-        <Stack.Navigator initialRouteName="Login">
+const Stack = createStackNavigator();
+
+export default function AppNavigator() {
+  const { currentUser } = useContext(AuthContext);
+
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        {!currentUser ? (
+          <>
             <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
-            <Stack.Screen name="UserDashboard" component={UserDashboardScreen} />
-            <Stack.Screen name="Register" component={RegisterScreen} />
-        </Stack.Navigator>
-    );
+            <Stack.Screen name="SignUp" component={SignUpScreen} />
+          </>
+        ) : currentUser.type === 'admin' ? (
+          <>
+            <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
+            <Stack.Screen name="UserList" component={UserList} />
+            <Stack.Screen name="EditUser" component={EditUser} />
+          </>
+        ) : (
+          <Stack.Screen name="UserDashboard" component={UserDashboard} />
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
 }

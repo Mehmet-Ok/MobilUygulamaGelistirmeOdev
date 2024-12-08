@@ -1,67 +1,52 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
-import { styles } from '../styles';
+// screens/LoginScreen.js
+import React, { useContext, useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { AuthContext } from '../context/AuthContext';
+import { styles } from '../styles/styles';
 
-export function LoginScreen({ navigation }) {
+const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const { users, setCurrentUser } = useContext(AuthContext);
+  // const { clearStorage, resetToInitialState } = useContext(AuthContext)
 
-  const users = [
-    { username: 'admin', password: '12345', role: 'admin' },
-    { username: 'user1', password: 'password1', role: 'user' },
-    { username: 'user2', password: 'password2', role: 'user' },
-  ];
 
-  // Kimlik doğrulama işlemi
   const handleLogin = () => {
-    const user = users.find(
-      (user) => user.username === username && user.password === password
-    );
-
+    
+    // clearStorage();
+    const user = users.find(u => u.username === username && u.password === password);
     if (user) {
-      if (user.role === 'admin') {
-        // Yönetici ise Admin Paneeline Yönlendir
-        navigation.navigate('AdminDashboard');
-      } else {
-        // Sıradan kullanıcı ise Kullanıcı Paneeline Yönlendir
-        navigation.navigate('UserDashboard');
-      }
+      setCurrentUser(user);
+      navigation.replace(user.type === 'admin' ? 'AdminDashboard' : 'UserDashboard');
     } else {
-      Alert.alert('Hata', 'Kullanıcı adı veya şifre hatalı!');
+      alert('Invalid credentials');
     }
   };
 
   return (
-    <View style={styles.loginContainer}>
-      <Text style={styles.title}>Giriş Yap</Text>
-
-      {/* Kullanıcı adı giriş alanı */}
+    <View style={styles.container}>
+      <Text style={styles.title}>Login</Text>
       <TextInput
         style={styles.input}
-        placeholder="Kullanıcı Adı"
+        placeholder="Username"
         value={username}
         onChangeText={setUsername}
       />
-
-      {/* Şifre giriş alanı */}
       <TextInput
         style={styles.input}
-        placeholder="Şifre"
+        placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
-
-      {/* Giriş yap butonu */}
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Giriş Yap</Text>
+        <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
-    
-      <TouchableOpacity
-        style={styles.linkButton}
-        onPress={() => navigation.navigate('Register')}>
-        <Text style={styles.linkText}>Hesabın yok mu? Kayıt ol</Text>
+      <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+        <Text style={styles.signupText}>Don't have an account? Sign up</Text>
       </TouchableOpacity>
     </View>
   );
-}
+};
+
+export default LoginScreen;
