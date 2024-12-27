@@ -6,7 +6,7 @@ const MenuScreen = ({ navigation }) => {
   const handleLogout = () => {
     FIREBASE_AUTH.signOut()
       .then(() => {
-        navigation.navigate('Login'); // navigation.replace yerine navigation.navigate kullanıldı
+        navigation.replace('Login');
       })
       .catch((error) => {
         console.error('Logout error:', error);
@@ -16,18 +16,35 @@ const MenuScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Admin Menu</Text>
-      <TouchableOpacity 
-        style={styles.button} 
+      <TouchableOpacity
+        style={styles.menuItem}
         onPress={() => navigation.navigate('AdminPanel')}
       >
-        <Text style={styles.buttonText}>Enter Lab Values</Text>
+        <Text style={styles.menuText}>Enter Lab Values</Text>
       </TouchableOpacity>
-      <TouchableOpacity 
-        style={[styles.button, styles.logoutButton]} 
+      <TouchableOpacity
+        style={styles.menuItem}
+        onPress={() => navigation.navigate('PatientManagement')}
+      >
+        <Text style={styles.menuText}>Manage Patients</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.menuItem}
+        onPress={() => navigation.navigate('DoctorPanel')}
+      >        
+        <Text style={styles.menuText}>Doctor Panel</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.menuItem}
+        onPress={() => navigation.navigate('GuidelineManager')}
+      >        
+        <Text style={styles.menuText}>Guidline Management</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.menuItemLogout}
         onPress={handleLogout}
       >
-        <Text style={styles.buttonText}>Logout</Text>
+        <Text style={styles.menuText}>Logout</Text>
       </TouchableOpacity>
     </View>
   );
@@ -38,30 +55,26 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  menuItem: {
+    width: '80%',
     padding: 20,
-    backgroundColor: '#f5f5f5',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  button: {
     backgroundColor: '#2196F3',
-    padding: 15,
     borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 10,
+    marginBottom: 15,
   },
-  logoutButton: {
-    backgroundColor: '#ff4444',
-    marginTop: 20,
+  menuItemLogout: {
+    width: '80%',
+    padding: 20,
+    backgroundColor: '#D01110',
+    borderRadius: 8,
+    marginBottom: 15,
   },
-  buttonText: {
+  menuText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
-  }
+  },
 });
 
 export default MenuScreen;

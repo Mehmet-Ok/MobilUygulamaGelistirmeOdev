@@ -1,54 +1,131 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { FIREBASE_AUTH, FIREBASE_DB } from '../../FirebaseConfig';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
-const Profile = () => {
-  const [userData, setUserData] = useState(null);
-  const currentUser = FIREBASE_AUTH.currentUser;
+const Profile = ({ navigation }) => {
+  const [loading, setLoading] = useState(true);
+  const [userData, setUserData] = useState({
+    name: '',
+    surname: '',
+    email: '',
+    birthDate: '',
+    gender: '',
+    age: '',
+    months: '',
+  });
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const docRef = doc(FIREBASE_DB, 'users', currentUser.uid);
-        const docSnap = await getDoc(docRef);
-        
-        if (docSnap.exists()) {
-          setUserData(docSnap.data());
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      }
-    };
-
     fetchUserData();
   }, []);
+
+  const fetchUserData = async () => {
+    try {
+      const currentUser = FIREBASE_AUTH.currentUser;
+      if (!currentUser) {
+        alert('Please login first');
+        navigation.replace('Login');
+        return;
+      }
+
+      const userRef = doc(FIREBASE_DB, 'users', currentUser.uid);
+      const userDoc = await getDoc(userRef);
+      if (userDoc.exists()) {
+        setUserData(userDoc.data());
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      alert('Error fetching user data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const calculateAgeAndMonths = (birthDate) => {
+    const birth = new Date(birthDate.split('/').reverse().join('-'));
+    const now = new Date();
+    const age = now.getFullYear() - birth.getFullYear();
+    const months = (now.getMonth() - birth.getMonth()) + (age * 12);
+    return { age, months };
+  };
+
+  const handleUpdate = async () => {
+    try {
+        setLoading(true);
+        const currentUser = FIREBASE_AUTH.currentUser;
+        if (!currentUser) {
+            alert('Please login first');
+            navigation.replace('Login');
+            return;
+        }
+
+        const { age, months } = calculateAgeAndMonths(userData.birthDate);
+        const updatedData = { ...userData, age, months };
+
+        const userRef = doc(FIREBASE_DB, 'users', currentUser.uid);
+        await updateDoc(userRef, updatedData);
+
+        // Update local state with new data
+        setUserData(updatedData);
+
+        alert('Profile updated successfully');
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        alert('Error updating profile');
+    } finally {
+        setLoading(false);
+    }
+};
+
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <ActivityIndicator size="large" color="#2196F3" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Profile</Text>
-      
-      {userData && (
-        <View style={styles.profileCard}>
-          <Text style={styles.label}>Name</Text>
-          <Text style={styles.value}>{userData.name} {userData.surname}</Text>
-          
-          <Text style={styles.label}>Email</Text>
-          <Text style={styles.value}>{userData.email}</Text>
-          
-          <Text style={styles.label}>Gender</Text>
-          <Text style={styles.value}>{userData.gender}</Text>
-          
-          <Text style={styles.label}>Birth Date</Text>
-          <Text style={styles.value}>{userData.birthDate}</Text>
-        </View>
-      )}
-
-      <TouchableOpacity 
-        style={styles.editButton}
-        onPress={() => FIREBASE_AUTH.signOut()}>
-        <Text style={styles.buttonText}>Sign Out</Text>
-      </TouchableOpacity>
+      <View style={styles.profileCard}>
+        <TextInput
+          style={styles.input}
+          placeholder="Name"
+          value={userData.name}
+          onChangeText={(text) => setUserData({ ...userData, name: text })}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Surname"
+          value={userData.surname}
+          onChangeText={(text) => setUserData({ ...userData, surname: text })}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          value={userData.email}
+          onChangeText={(text) => setUserData({ ...userData, email: text })}
+          editable={false} // Email is not editable
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Birth Date (DD/MM/YYYY)"
+          value={userData.birthDate}
+          onChangeText={(text) => setUserData({ ...userData, birthDate: text })}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Gender"
+          value={userData.gender}
+          onChangeText={(text) => setUserData({ ...userData, gender: text })}
+        />
+        <Text>Age: {userData.age}</Text>
+        <Text>Months: {userData.months}</Text>
+        <TouchableOpacity style={styles.button} onPress={handleUpdate}>
+          <Text style={styles.buttonText}>Update Profile</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -59,6 +136,10 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#f5f5f5',
   },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -67,31 +148,35 @@ const styles = StyleSheet.create({
   profileCard: {
     backgroundColor: 'white',
     padding: 20,
-    borderRadius: 10,
-    elevation: 2,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
   },
-  label: {
-    fontSize: 16,
-    color: '#666',
-    marginTop: 10,
+  input: {
+    width: '100%',
+    height: 50,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    marginBottom: 15,
+    backgroundColor: '#fff',
   },
-  value: {
-    fontSize: 18,
-    fontWeight: '500',
-    marginBottom: 10,
-  },
-  editButton: {
-    backgroundColor: '#ff6b6b',
+  button: {
+    backgroundColor: '#2196F3',
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 10,
   },
   buttonText: {
-    color: 'white',
+    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
-  }
+  },
 });
 
 export default Profile;

@@ -1,8 +1,19 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore, collection, addDoc, doc, getDoc } from "firebase/firestore";
+import {
+  getFirestore,
+  initializeFirestore,
+  CACHE_SIZE_UNLIMITED,
+  enableMultiTabIndexedDbPersistence,
+  doc,
+  getDoc,
+  getDocs, // Bu satırı ekle
+  collection,
+  addDoc,
+  updateDoc,
+  setDoc
+} from "firebase/firestore";
 
-// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBjXxPGpXAaIzYOEckcYpMdvht_uiCPGe0",
   authDomain: "userauth-fe50a.firebaseapp.com",
@@ -12,51 +23,112 @@ const firebaseConfig = {
   appId: "1:887853085299:web:344a8b71d9d44389a7f006"
 };
 
-// Initialize Firebase instances
 const FIREBASE_APP = initializeApp(firebaseConfig);
 const FIREBASE_AUTH = getAuth(FIREBASE_APP);
-const FIREBASE_DB = getFirestore(FIREBASE_APP);
 
-// Function to add lab results for a specific user
-const addLabResult = async (userId) => {
-  if (!userId) {
-    console.error('User ID is required');
-    return;
-  }
+// Initialize Firestore with better performance settings
+const FIREBASE_DB = initializeFirestore(FIREBASE_APP, {
+  cacheSizeBytes: CACHE_SIZE_UNLIMITED,
+  experimentalForceLongPolling: true,
+  useFetchStreams: false
+});
 
+// Enable offline persistence
+enableMultiTabIndexedDbPersistence(FIREBASE_DB)
+  .catch((err) => {
+    console.error("Error enabling persistence:", err);
+  });
+
+// Add guideline
+const addGuideline = async (data) => {
   try {
-    // Check if user exists
-    const userDoc = await getDoc(doc(FIREBASE_DB, 'users', userId));
-    if (!userDoc.exists()) {
-      console.error('User not found');
-      return;
-    }
-
-    // Add lab results
-    await addDoc(collection(FIREBASE_DB, 'labResults'), {
-      userId: userId,
-      patientName: `${userDoc.data().name} ${userDoc.data().surname}`,
-      testDate: new Date().toISOString(),
-      IgA: "150",
-      IgM: "120",
-      IgG: "1100",
-      IgG1: "500",
-      IgG2: "400",
-      IgG3: "100",
-      IgG4: "50",
-      createdAt: new Date().toISOString()
+    const guidelineRef = doc(FIREBASE_DB, 'guidelines', data.name);
+    await setDoc(guidelineRef, {
+      ...data,
+      createdAt: new Date().toISOString(),
+      createdBy: FIREBASE_AUTH.currentUser.uid
     });
-    
-    console.log('Lab results added for user:', userId);
+    return true;
   } catch (error) {
-    console.error('Error adding lab results:', error);
+    console.error('Error adding guideline:', error);
+    throw error;
   }
 };
 
-// Export Firebase instances and functions
-export { 
-  FIREBASE_APP, 
-  FIREBASE_AUTH, 
-  FIREBASE_DB, 
-  addLabResult 
+// Fetch guidelines
+const fetchGuidelines = async () => {
+  try {
+    const guidelinesRef = collection(FIREBASE_DB, 'guidelines');
+    const querySnapshot = await getDocs(guidelinesRef);
+    const guidelines = {};
+    querySnapshot.forEach((doc) => {
+      guidelines[doc.id] = doc.data();
+    });
+    return guidelines;
+  } catch (error) {
+    console.error('Error fetching guidelines:', error);
+    throw error;
+  }
+};
+
+// Check if user is admin/doctor
+const isUserAdmin = async (uid) => {
+  try {
+    console.log('Checking admin status for:', uid);
+    const userRef = doc(FIREBASE_DB, 'users', uid);
+    const userDoc = await getDoc(userRef);
+    console.log('User doc exists:', userDoc.exists());
+    if (userDoc.exists()) {
+      console.log('User data:', userDoc.data());
+    }
+    return userDoc.exists() && userDoc.data().userType === 'doctor';
+  } catch (error) {
+    console.error('Admin check error:', error);
+    return false;
+  }
+};
+
+// Add lab result
+const addLabResult = async (data) => {
+  try {
+    const { userId, doctorId, testDate, ...labValues } = data;
+    const labResultRef = doc(FIREBASE_DB, 'labResults', userId);
+
+    const existingDoc = await getDoc(labResultRef);
+    let updatedResults = {};
+
+    if (existingDoc.exists()) {
+      updatedResults = {
+        ...existingDoc.data(),
+        [testDate]: {
+          ...labValues,
+          doctorId,
+          testDate
+        }
+      };
+    } else {
+      updatedResults = {
+        [testDate]: {
+          ...labValues,
+          doctorId,
+          testDate
+        }
+      };
+    }
+
+    await setDoc(labResultRef, updatedResults);
+    console.log('Lab results saved successfully');
+  } catch (error) {
+    console.error('Error adding lab result:', error);
+    throw error;
+  }
+};
+
+export {
+  FIREBASE_AUTH,
+  FIREBASE_DB,
+  isUserAdmin,
+  addLabResult,
+  addGuideline,
+  fetchGuidelines
 };

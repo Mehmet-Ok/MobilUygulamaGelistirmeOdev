@@ -1,8 +1,19 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import React from 'react';
 import { FIREBASE_AUTH } from '../../FirebaseConfig';
 
 const Dashboard = ({ navigation }) => {
+  const handleLogout = () => {
+    FIREBASE_AUTH.signOut()
+      .then(() => {
+        navigation.navigate('Login'); // navigation.replace yerine navigation.navigate kullanıldı
+      })
+      .catch((error) => {
+        console.error('Logout error:', error);
+        alert('Error logging out');
+      });
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.welcome}>Welcome to E-Laboratory</Text>
@@ -22,7 +33,7 @@ const Dashboard = ({ navigation }) => {
 
         <TouchableOpacity 
           style={styles.logoutButton}
-          onPress={() => FIREBASE_AUTH.signOut()}>
+          onPress={handleLogout}>
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </View>
@@ -33,22 +44,26 @@ const Dashboard = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: '#f5f5f5',
+    padding: 20,
   },
   welcome: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 30,
-    textAlign: 'center',
+    color: '#333',
   },
   menuContainer: {
-    gap: 15,
+    width: '100%',
+    maxWidth: 300,
   },
   menuItem: {
     backgroundColor: '#2196F3',
     padding: 15,
     borderRadius: 8,
+    marginBottom: 15,
     alignItems: 'center',
   },
   menuText: {
@@ -57,17 +72,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   logoutButton: {
-    backgroundColor: '#ff6b6b',
+    backgroundColor: '#ff4444',
     padding: 15,
     borderRadius: 8,
-    alignItems: 'center',
     marginTop: 20,
+    alignItems: 'center',
   },
   logoutText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
-  }
+  },
 });
 
 export default Dashboard;

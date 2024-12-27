@@ -1,35 +1,42 @@
-import { StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Login from './app/screens/login';
-import Dashboard from './app/screens/Dashboard';
-import List from './app/screens/List';
-import Profile from './app/screens/Profile';
-import AdminPanel from './app/screens/AdminPanel';
 import { FIREBASE_AUTH, FIREBASE_DB } from './FirebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import React, { useState, useEffect } from 'react';
+
+
+import Login from './app/screens/Login';
+import Dashboard from './app/screens/Dashboard';
+import AdminPanel from './app/screens/AdminPanel';
+import DoctorPanel from './app/screens/DoctorPanel';
+import PatientManagement from './app/screens/PatientManagement';
+import MenuScreen from './app/screens/MenuScreen';
+import List from './app/screens/List';
+import Profile from './app/screens/Profile';
+import GuidelineManager from './app/screens/GuidelineManager';
 
 const Stack = createNativeStackNavigator();
-const InsideStack = createNativeStackNavigator();
-const AdminStack = createNativeStackNavigator();
 
-function AdminLayout() {
+function DoctorLayout() {
   return (
-    <AdminStack.Navigator>
-      <AdminStack.Screen name="AdminPanel" component={AdminPanel} />
-    </AdminStack.Navigator>
+    <Stack.Navigator>
+      <Stack.Screen name="MenuScreen" component={MenuScreen} />
+      <Stack.Screen name="AdminPanel" component={AdminPanel} />
+      <Stack.Screen name="PatientManagement" component={PatientManagement} />
+      <Stack.Screen name="DoctorPanel" component={DoctorPanel} />
+      <Stack.Screen name="GuidelineManager" component={GuidelineManager} />
+    </Stack.Navigator>
   );
 }
 
-function UserLayout() {
+function PatientLayout() {
   return (
-    <InsideStack.Navigator>
-      <InsideStack.Screen name="Dashboard" component={Dashboard} />
-      <InsideStack.Screen name="List" component={List} />
-      <InsideStack.Screen name="Profile" component={Profile} />
-    </InsideStack.Navigator>
+    <Stack.Navigator>
+      <Stack.Screen name="Dashboard" component={Dashboard} />
+      <Stack.Screen name="List" component={List} />
+      <Stack.Screen name="Profile" component={Profile} />
+    </Stack.Navigator>
   );
 }
 
@@ -53,44 +60,17 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator>
         {user ? (
-          userType === 'admin' ? (
-            <Stack.Screen 
-              name="AdminInside" 
-              component={AdminLayout} 
-              options={{ headerShown: false }} 
-            />
+          userType === 'doctor' ? (
+            <Stack.Screen name="DoctorLayout" component={DoctorLayout} options={{ headerShown: false }} />
           ) : (
-            <Stack.Screen 
-              name="UserInside" 
-              component={UserLayout} 
-              options={{ headerShown: false }} 
-            />
+            <Stack.Screen name="PatientLayout" component={PatientLayout} options={{ headerShown: false }} />
           )
         ) : (
-          <Stack.Screen 
-            name="Login" 
-            component={Login} 
-            options={{ headerShown: false }} 
-          />
+          <Stack.Screen name="Login" component={Login} />
         )}
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    backgroundColor: '#ecf0f1',
-    padding: 8,
-  },
-  paragraph: {
-    margin: 24,
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-});
