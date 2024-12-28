@@ -41,6 +41,12 @@ const MenuScreen = ({ navigation }) => {
         <Text style={styles.menuText}>Guidline Management</Text>
       </TouchableOpacity>
       <TouchableOpacity
+        style={styles.menuItem}
+        onPress={() => navigation.navigate('GuidelineProcessMenuScreen')}
+      >
+        <Text style={styles.menuText}>Guideline Process</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
         style={styles.menuItemLogout}
         onPress={handleLogout}
       >

@@ -6,7 +6,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 
 
-import Login from './app/screens/Login';
+import Login from './app/screens/login';
 import Dashboard from './app/screens/Dashboard';
 import AdminPanel from './app/screens/AdminPanel';
 import DoctorPanel from './app/screens/DoctorPanel';
@@ -15,6 +15,9 @@ import MenuScreen from './app/screens/MenuScreen';
 import List from './app/screens/List';
 import Profile from './app/screens/Profile';
 import GuidelineManager from './app/screens/GuidelineManager';
+import GuidelineProcessMenuScreen from './app/screens/GuidelineProcessMenuScreen';
+import GuidelineList from './app/screens/GuidelineList';
+import GuidelineEditScreen from './app/screens/GuidelineEditScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -26,6 +29,9 @@ function DoctorLayout() {
       <Stack.Screen name="PatientManagement" component={PatientManagement} />
       <Stack.Screen name="DoctorPanel" component={DoctorPanel} />
       <Stack.Screen name="GuidelineManager" component={GuidelineManager} />
+      <Stack.Screen name="GuidelineProcessMenuScreen" component={GuidelineProcessMenuScreen} />
+      <Stack.Screen name="GuidelineList" component={GuidelineList} />
+      <Stack.Screen name="GuidelineEditScreen" component={GuidelineEditScreen} />
     </Stack.Navigator>
   );
 }
