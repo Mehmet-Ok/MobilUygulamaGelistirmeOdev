@@ -1,59 +1,64 @@
 import React from 'react';
-import { Modal, View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import {
+  Modal,
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+} from 'react-native';
 
 const ResultModal = ({ visible, onClose, patient, selectedDate, onSelectDate }) => {
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    
-    return `${day}/${month}/${year} - ${hours}:${minutes}`;
+    return new Date(dateString).toLocaleDateString();
   };
 
   return (
     <Modal
       visible={visible}
       transparent={true}
-      animationType="slide"
+      animationType="fade"
       onRequestClose={onClose}
     >
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>
-            {patient?.name} {patient?.surname} - Lab Results
+            {patient ? `${patient.name} ${patient.surname}'s Results` : 'Lab Results'}
           </Text>
-          
+
           <ScrollView style={styles.dateList}>
             {patient?.labResults && Object.keys(patient.labResults).map((date) => (
               <TouchableOpacity
                 key={date}
-                style={[
-                  styles.dateItem,
-                  selectedDate === date && styles.selectedDate
-                ]}
+                style={[styles.dateItem, selectedDate === date && styles.selectedDate]}
                 onPress={() => onSelectDate(date)}
               >
-                <Text style={styles.dateText}>
-                  {formatDate(date)}
-                </Text>
+                <Text style={styles.dateText}>{formatDate(date)}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
 
           {selectedDate && patient?.labResults[selectedDate] && (
-            <View style={styles.resultContainer}>
+            <ScrollView style={styles.resultContainer}>
               {Object.entries(patient.labResults[selectedDate])
-                .filter(([key]) => !['doctorId', 'testDate'].includes(key))
-                .map(([key, value]) => (
-                  <View key={key} style={styles.row}>
-                    <Text style={styles.label}>{key}</Text>
-                    <Text style={styles.value}>{value} g/L</Text>
-                  </View>
-                ))}
-            </View>
+                .filter(([key]) => key !== 'doctorId')
+                .map(([testName, value]) => {
+                  const evaluation = patient.evaluations?.[testName];
+                  return (
+                    <View key={testName} style={styles.resultRow}>
+                      <Text style={styles.testName}>{testName}</Text>
+                      <View style={styles.valueStatusContainer}>
+                        <Text style={styles.testValue}>{value} g/L</Text>
+                        {evaluation && (
+                          <View style={[styles.statusBadge, { backgroundColor: evaluation.color }]}>
+                            <Text style={styles.statusText}>{evaluation.status}</Text>
+                          </View>
+                        )}
+                      </View>
+                    </View>
+                  );
+                })}
+            </ScrollView>
           )}
 
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
@@ -84,10 +89,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 15,
     textAlign: 'center',
-    color: '#333',
   },
   dateList: {
-    maxHeight: 200,
+    maxHeight: 150,
     marginBottom: 15,
   },
   dateItem: {
@@ -103,26 +107,41 @@ const styles = StyleSheet.create({
     color: '#2196F3',
   },
   resultContainer: {
-    padding: 10,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
+    marginTop: 10,
   },
-  row: {
+  resultRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
-  label: {
+  testName: {
     fontSize: 16,
-    color: '#666',
+    fontWeight: 'bold',
+    flex: 1,
   },
-  value: {
+  valueStatusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  testValue: {
     fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
+    marginRight: 10,
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    minWidth: 60,
+    alignItems: 'center',
+  },
+  statusText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 12,
   },
   closeButton: {
     marginTop: 20,
