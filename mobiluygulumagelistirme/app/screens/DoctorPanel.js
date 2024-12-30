@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { FIREBASE_DB, FIREBASE_AUTH, isUserAdmin } from '../../FirebaseConfig';
-import { doc, getDoc } from 'firebase/firestore';
-import ResultModal from '../components/ResultModal';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Modal } from 'react-native';
+import { FIREBASE_DB, FIREBASE_AUTH } from '../../FirebaseConfig';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { Picker } from '@react-native-picker/picker';
 
 const DoctorPanel = ({ navigation }) => {
@@ -14,14 +12,69 @@ const DoctorPanel = ({ navigation }) => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [guidelines, setGuidelines] = useState([]);
   const [selectedGuideline, setSelectedGuideline] = useState('');
-
+  const [mergedGuideline, setMergedGuideline] = useState(null);
 
   useEffect(() => {
     checkAdminAndLoadData();
     fetchGuidelines();
-    calculateAgeInMonths();
-    evaluateLabResults();
   }, []);
+
+  const checkAdminAndLoadData = async () => {
+    fetchPatients(FIREBASE_AUTH.currentUser.uid);
+  };
+
+  const getAgeInMonths = (birthDate) => {
+    const today = new Date();
+    const birth = new Date(birthDate);
+    const ageInMonths = (today.getFullYear() - birth.getFullYear()) * 12 + today.getMonth() - birth.getMonth();
+    return ageInMonths;
+  };
+
+  const findAgeRange = (ageInMonths, ageRanges) => {
+    return ageRanges && ageRanges.find(range => {
+      const [min, max] = range.ageRange.split('-').map(Number);
+      return ageInMonths >= min && (max === undefined || ageInMonths <= max);
+    });
+  };
+
+  const evaluateLabResults = (labResults, guidelineRanges, patientBirthDate) => {
+    if (!labResults || !guidelineRanges || !guidelineRanges.ageRanges || !patientBirthDate) {
+      return {};
+    }
+
+    const evaluations = {};
+    const firstResultKey = Object.keys(labResults)[0];
+    const testResults = labResults[firstResultKey];
+
+    if (!testResults) return {};
+    const patientAgeInMonths = getAgeInMonths(patientBirthDate);
+    const ageRange = findAgeRange(patientAgeInMonths, guidelineRanges.ageRanges);
+
+    if (!ageRange) {
+      return {};
+    }
+
+    Object.entries(testResults).forEach(([testName, value]) => {
+      if (testName === 'doctorId' || testName === 'testDate') return;
+      const testValues = ageRange.testValues;
+      if (testValues && testValues[`min${testName}`] !== undefined && testValues[`max${testName}`] !== undefined) {
+        const min = parseFloat(testValues[`min${testName}`] === '-' ? -Infinity : testValues[`min${testName}`]);
+        const max = parseFloat(testValues[`max${testName}`] === '-' ? Infinity : testValues[`max${testName}`]);
+        const testValue = parseFloat(value);
+
+        if (testValue < min) {
+          evaluations[testName] = { status: 'LOW', color: '#ff6b6b' };
+        } else if (testValue > max) {
+          evaluations[testName] = { status: 'HIGH', color: '#ff9f43' };
+        } else {
+          evaluations[testName] = { status: 'NORMAL', color: '#51cf66' };
+        }
+      }
+    });
+
+    console.log('Evaluations:', evaluations); // Add this line to log evaluations to the console
+    return evaluations;
+  };
 
   const fetchGuidelines = async () => {
     try {
@@ -31,45 +84,10 @@ const DoctorPanel = ({ navigation }) => {
         id: doc.id,
         ...doc.data()
       }));
-
-      console.log('\nAll guidelines:', guidelinesList);
       setGuidelines(guidelinesList);
     } catch (error) {
       console.error("Error fetching guidelines:", error);
       alert("Error loading guidelines");
-    }
-  };
-
-  const calculateAgeInMonths = (birthDate) => {
-    const today = new Date();
-    const birth = new Date(birthDate);
-    return (today.getFullYear() - birth.getFullYear()) * 12 +
-      (today.getMonth() - birth.getMonth());
-  };
-
-  const checkAdminAndLoadData = async () => {
-    try {
-      const currentUser = FIREBASE_AUTH.currentUser;
-      if (!currentUser) {
-        alert('Please login first');
-        navigation.replace('Login');
-        return;
-      }
-
-      const admin = await isUserAdmin(currentUser.uid);
-      if (!admin) {
-        alert('Unauthorized access');
-        navigation.navigate('Dashboard');
-        return;
-      }
-
-      await fetchPatients(currentUser.uid);
-    } catch (error) {
-      console.error('Setup error:', error);
-      alert('Error setting up doctor panel');
-      navigation.navigate('Dashboard');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -111,54 +129,47 @@ const DoctorPanel = ({ navigation }) => {
     }
   };
 
-  const evaluateLabResults = (labResults, guidelineRanges) => {
-    if (!labResults || !guidelineRanges || !guidelineRanges.testValues) {
-      return {};
+  const handleGuidelineChange = (itemValue) => {
+    setSelectedGuideline(itemValue);
+    const selectedItem = guidelines.find(g => g.id === itemValue);
+    if (selectedItem) {
+      const merged = selectedItem.ageRanges.map(range => {
+        const mergedValues = {};
+        Object.entries(range.testValues).forEach(([key, value]) => {
+          const testName = key.replace(/^(min|max)/, '');
+          if (!mergedValues[testName]) {
+            mergedValues[testName] = {};
+          }
+          mergedValues[testName][key.startsWith('min') ? 'min' : 'max'] = parseFloat(value === '-' ? (key.startsWith('min') ? -Infinity : Infinity) : value);
+        });
+        return { ...range, testValues: mergedValues };
+      });
+      setMergedGuideline({ ...selectedItem, ageRanges: merged });
+      console.log('Merged Guideline:', mergedGuideline); // Log merged guideline
     }
-
-    const evaluations = {};
-    const firstResultKey = Object.keys(labResults)[0];
-    const testResults = labResults[firstResultKey];
-
-    if (!testResults) return {};
-
-    Object.entries(testResults).forEach(([testName, value]) => {
-      if (testName === 'doctorId') return;
-
-      const minKey = `min${testName}`;
-      const maxKey = `max${testName}`;
-
-      if (guidelineRanges.testValues[minKey] && guidelineRanges.testValues[maxKey]) {
-        const min = parseFloat(guidelineRanges.testValues[minKey]);
-        const max = parseFloat(guidelineRanges.testValues[maxKey]);
-        const testValue = parseFloat(value);
-
-        if (testValue < min) {
-          evaluations[testName] = { status: 'LOW', color: '#ff6b6b' };
-        } else if (testValue > max) {
-          evaluations[testName] = { status: 'HIGH', color: '#ff9f43' };
-        } else {
-          evaluations[testName] = { status: 'NORMAL', color: '#51cf66' };
-        }
-      }
-    });
-
-    return evaluations;
   };
 
-  if (loading) {
-    return (
-      <View style={[styles.container, styles.centerContent]}>
-        <ActivityIndicator size="large" color="#2196F3" />
-      </View>
-    );
-  }
+  const handlePatientSelect = (patient) => {
+    setSelectedPatient(patient);
+    setSelectedDate(null);
+    setModalVisible(true);
+
+    if (mergedGuideline) {
+      const evaluations = evaluateLabResults(patient.labResults, mergedGuideline, patient.birthDate);
+      console.log('Evaluations for selected patient:', evaluations); // Log evaluations for selected patient
+      setSelectedPatient({ ...patient, evaluations });
+    }
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString();
+  };
 
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Doctor Panel</Text>
-      <TouchableOpacity 
-        style={styles.refreshButton} 
+      <TouchableOpacity
+        style={styles.refreshButton}
         onPress={() => fetchPatients(FIREBASE_AUTH.currentUser.uid)}
       >
         <Text style={styles.refreshButtonText}>Refresh</Text>
@@ -167,17 +178,7 @@ const DoctorPanel = ({ navigation }) => {
       <View style={styles.pickerContainer}>
         <Picker
           selectedValue={selectedGuideline}
-          onValueChange={(itemValue) => {
-            setSelectedGuideline(itemValue);
-            const selectedItem = guidelines.find(g => g.id === itemValue);
-            if (selectedItem && patients.length > 0) {
-              const updatedPatients = patients.map(patient => ({
-                ...patient,
-                evaluations: evaluateLabResults(patient.labResults, selectedItem)
-              }));
-              setPatients(updatedPatients);
-            }
-          }}
+          onValueChange={handleGuidelineChange}
           style={styles.picker}
         >
           <Picker.Item label="Select a Guideline" value="" />
@@ -191,34 +192,85 @@ const DoctorPanel = ({ navigation }) => {
         </Picker>
       </View>
 
-      {patients.map((patient) => (
-        <TouchableOpacity
-          key={patient.id}
-          style={styles.patientContainer}
-          onPress={() => {
-            setSelectedPatient(patient);
+      {loading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (
+        patients.map((patient) => (
+          <TouchableOpacity
+            key={patient.id}
+            style={styles.patientContainer}
+            onPress={() => handlePatientSelect(patient)}
+          >
+            <Text style={styles.patientName}>{`${patient.name} ${patient.surname}`}</Text>
+            <Text style={styles.patientInfo}>Age: {patient.age}</Text>
+            <Text style={styles.patientInfo}>Gender: {patient.gender}</Text>
+          </TouchableOpacity>
+        ))
+      )}
+
+      {selectedPatient && (
+        <Modal
+          visible={modalVisible}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => {
+            setModalVisible(false);
+            setSelectedPatient(null);
             setSelectedDate(null);
-            setModalVisible(true);
           }}
         >
-          <Text style={styles.patientName}>{`${patient.name} ${patient.surname}`}</Text>
-          <Text style={styles.patientInfo}>Age: {patient.age}</Text>
-          <Text style={styles.patientInfo}>Gender: {patient.gender}</Text>
-        </TouchableOpacity>
-      ))}
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>
+                {`${selectedPatient.name} ${selectedPatient.surname}'s Results`}
+              </Text>
 
-      <ResultModal
-        visible={modalVisible}
-        onClose={() => {
-          setModalVisible(false);
-          setSelectedPatient(null);
-          setSelectedDate(null);
-        }}
-        patient={selectedPatient}
-        selectedDate={selectedDate}
-        onSelectDate={setSelectedDate}
-        selectedGuideline={selectedGuideline}
-      />
+              <ScrollView style={styles.dateList}>
+                {selectedPatient?.labResults && Object.keys(selectedPatient.labResults).map((date) => (
+                  <TouchableOpacity
+                    key={date}
+                    style={[styles.dateItem, selectedDate === date && styles.selectedDate]}
+                    onPress={() => setSelectedDate(date)}
+                  >
+                    <Text style={styles.dateText}>{formatDate(date)}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+
+              {selectedDate && selectedPatient?.labResults[selectedDate] && (
+                <ScrollView style={styles.resultContainer}>
+                  {Object.entries(selectedPatient.labResults[selectedDate])
+                    .filter(([key]) => key !== 'doctorId' && key !== 'testDate')
+                    .map(([testName, value]) => {
+                      const evaluation = selectedPatient.evaluations?.[testName];
+                      console.log('Evaluation for', testName, ':', evaluation); // Add this line to log evaluations to the console
+                      return (
+                        <View key={testName} style={styles.resultRow}>
+                          <Text style={styles.testName}>{testName}</Text>
+                          <View style={styles.valueStatusContainer}>
+                            <Text style={styles.testValue}>{value} g/L</Text>
+                            {evaluation && (
+                              <View style={[styles.statusBadge, { backgroundColor: evaluation.color }]}>
+                                <Text style={styles.statusText}>{evaluation.status}</Text>
+                              </View>
+                            )}
+                          </View>
+                        </View>
+                      );
+                    })}
+                </ScrollView>
+              )}
+              <TouchableOpacity style={styles.closeButton} onPress={() => {
+                setModalVisible(false);
+                setSelectedPatient(null);
+                setSelectedDate(null);
+              }}>
+                <Text style={styles.closeButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      )}
     </ScrollView>
   );
 };
@@ -278,15 +330,90 @@ const styles = StyleSheet.create({
   picker: {
     height: 50,
   },
-  testResult: {
-    padding: 5,
-    borderRadius: 4,
-    marginVertical: 2,
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  resultText: {
-    color: '#fff',
+  modalContent: {
+    backgroundColor: 'white',
+    width: '90%',
+    maxHeight: '80%',
+    borderRadius: 10,
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: 20,
     fontWeight: 'bold',
-  }
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  dateList: {
+    maxHeight: 150,
+    marginBottom: 15,
+  },
+  dateItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  selectedDate: {
+    backgroundColor: '#e3f2fd',
+  },
+  dateText: {
+    fontSize: 16,
+    color: '#2196F3',
+  },
+  resultContainer: {
+    marginTop: 10,
+  },
+  resultRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  testName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    flex: 1,
+  },
+  valueStatusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  testValue: {
+    fontSize: 16,
+    marginRight: 10,
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    minWidth: 60,
+    alignItems: 'center',
+  },
+  statusText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 12,
+  },
+  closeButton: {
+    marginTop: 20,
+    backgroundColor: '#2196F3',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });
 
 export default DoctorPanel;

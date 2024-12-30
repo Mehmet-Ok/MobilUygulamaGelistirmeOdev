@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Modal,
   View,
@@ -9,6 +9,9 @@ import {
 } from 'react-native';
 
 const ResultModal = ({ visible, onClose, patient, selectedDate, onSelectDate }) => {
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [selectedTest, setSelectedTest] = useState(null);
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString();
   };
@@ -45,7 +48,14 @@ const ResultModal = ({ visible, onClose, patient, selectedDate, onSelectDate }) 
                 .map(([testName, value]) => {
                   const evaluation = patient.evaluations?.[testName];
                   return (
-                    <View key={testName} style={styles.resultRow}>
+                    <TouchableOpacity
+                      key={testName}
+                      style={styles.resultRow}
+                      onPress={() => {
+                        setSelectedTest({ testName, value, evaluation });
+                        setDetailModalVisible(true);
+                      }}
+                    >
                       <Text style={styles.testName}>{testName}</Text>
                       <View style={styles.valueStatusContainer}>
                         <Text style={styles.testValue}>{value} g/L</Text>
@@ -55,7 +65,7 @@ const ResultModal = ({ visible, onClose, patient, selectedDate, onSelectDate }) 
                           </View>
                         )}
                       </View>
-                    </View>
+                    </TouchableOpacity>
                   );
                 })}
             </ScrollView>
@@ -65,6 +75,30 @@ const ResultModal = ({ visible, onClose, patient, selectedDate, onSelectDate }) 
             <Text style={styles.closeButtonText}>Close</Text>
           </TouchableOpacity>
         </View>
+
+        {selectedTest && (
+          <Modal
+            visible={detailModalVisible}
+            transparent={true}
+            animationType="fade"
+            onRequestClose={() => setDetailModalVisible(false)}
+          >
+            <View style={styles.modalContainer}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>{selectedTest.testName}</Text>
+                <Text style={styles.testValue}>{selectedTest.value} g/L</Text>
+                {selectedTest.evaluation && (
+                  <Text style={[styles.statusText, { color: selectedTest.evaluation.color }]}>
+                    {selectedTest.evaluation.status}
+                  </Text>
+                )}
+                <TouchableOpacity style={styles.closeButton} onPress={() => setDetailModalVisible(false)}>
+                  <Text style={styles.closeButtonText}>Close</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+        )}
       </View>
     </Modal>
   );
