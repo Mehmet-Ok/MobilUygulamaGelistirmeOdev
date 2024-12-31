@@ -16,25 +16,25 @@ const Dashboard = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.welcome}>Welcome to E-Laboratory</Text>
+      <Text style={styles.welcome}>E-Laboratuvara hoşgeldiniz</Text>
       
       <View style={styles.menuContainer}>
         <TouchableOpacity 
           style={styles.menuItem}
           onPress={() => navigation.navigate('List')}>
-          <Text style={styles.menuText}>Lab Results</Text>
+          <Text style={styles.menuText}>Tahlil sonuçları</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
           style={styles.menuItem}
           onPress={() => navigation.navigate('Profile')}>
-          <Text style={styles.menuText}>Profile Management</Text>
+          <Text style={styles.menuText}>Profil yönetimi</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
           style={styles.logoutButton}
           onPress={handleLogout}>
-          <Text style={styles.logoutText}>Logout</Text>
+          <Text style={styles.logoutText}>Çıkış</Text>
         </TouchableOpacity>
       </View>
     </View>

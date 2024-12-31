@@ -143,7 +143,7 @@ const AdminPanel = ({ navigation }) => {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Enter Lab Values</Text>
+      <Text style={styles.title}>Tahlil sonucu girin</Text>
 
       <View style={styles.pickerContainer}>
         <Picker
@@ -151,7 +151,7 @@ const AdminPanel = ({ navigation }) => {
           onValueChange={setSelectedPatient}
           style={styles.picker}
         >
-          <Picker.Item label="Select Patient" value="" />
+          <Picker.Item label="Hasta seçin" value="" />
           {patients.map((patient) => (
             <Picker.Item
               key={patient.id}
@@ -166,7 +166,7 @@ const AdminPanel = ({ navigation }) => {
         <TextInput
           key={key}
           style={styles.input}
-          placeholder={`${key} Value`}
+          placeholder={`${key} değeri`}
           value={values[key]}
           onChangeText={(text) => setValues({ ...values, [key]: text })}
           keyboardType="numeric"
@@ -178,7 +178,7 @@ const AdminPanel = ({ navigation }) => {
         onPress={handleSave}
         disabled={loading}
       >
-        <Text style={styles.buttonText}>Save Values</Text>
+        <Text style={styles.buttonText}>Kaydet</Text>
       </TouchableOpacity>
     </ScrollView>
   );

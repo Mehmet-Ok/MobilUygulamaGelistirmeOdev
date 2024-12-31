@@ -8,21 +8,21 @@ const GuidelineProcessMenuScreen = ({ navigation }) => {
         style={styles.menuItem}
         onPress={() => navigation.navigate('GuidelineManager')}
       >
-        <Text style={styles.menuText}>Add Guideline</Text>
+        <Text style={styles.menuText}>Kılavuz ekle</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.menuItem}
         onPress={() => navigation.navigate('GuidelineList')}
       >
-        <Text style={styles.menuText}>List Guidelines</Text>
+        <Text style={styles.menuText}>Kılavuz listele</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.menuItem}
         onPress={() => navigation.navigate('GuidelineEditScreen')}
       >
-        <Text style={styles.menuText}>Edit Guideline</Text>
+        <Text style={styles.menuText}>Kılavuz düzenle</Text>
       </TouchableOpacity>
     </View>
   );

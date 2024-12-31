@@ -109,7 +109,7 @@ const GuidelineEditScreen = ({ navigation }) => {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Guidelines</Text>
+      <Text style={styles.title}>Kılavuzlar</Text>
       <View style={styles.guidelineHeader}>
         <View style={styles.pickerContainer}>
           <Picker
@@ -120,7 +120,7 @@ const GuidelineEditScreen = ({ navigation }) => {
             }}
             style={styles.picker}
           >
-            <Picker.Item label="Select a guideline" value={null} />
+            <Picker.Item label="Kılavuz seçin" value={null} />
             {guidelines.map(guideline => (
               <Picker.Item 
                 key={guideline.id} 
@@ -135,7 +135,7 @@ const GuidelineEditScreen = ({ navigation }) => {
             style={styles.deleteButton} 
             onPress={deleteGuideline}
           >
-            <Text style={styles.deleteButtonText}>Delete</Text>
+            <Text style={styles.deleteButtonText}>Sil</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -143,14 +143,14 @@ const GuidelineEditScreen = ({ navigation }) => {
       {selectedGuideline && (
         <View style={styles.guidelineContainer}>
           <TouchableOpacity style={styles.addButton} onPress={addAgeRange}>
-            <Text style={styles.buttonText}>Add Age Range</Text>
+            <Text style={styles.buttonText}>Yaş Aralığı Ekle</Text>
           </TouchableOpacity>
 
           {selectedGuideline.ageRanges.map((ageRange, index) => (
             <View key={index} style={styles.ageRangeContainer}>
               <View style={styles.ageRangeHeader}>
                 <View style={styles.ageRangeRow}>
-                  <Text style={styles.ageRangeLabel}>Age Range:</Text>
+                  <Text style={styles.ageRangeLabel}>Yaş Aralığı</Text>
                   <TextInput
                     style={styles.ageRangeInput}
                     value={ageRange.ageRange}
@@ -209,7 +209,7 @@ const GuidelineEditScreen = ({ navigation }) => {
             </View>
           ))}
           <TouchableOpacity style={styles.button} onPress={handleSaveChanges}>
-            <Text style={styles.buttonText}>Save Changes</Text>
+            <Text style={styles.buttonText}>Değişiklikleri kaydet</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -342,6 +342,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 20,
+    marginBottom: 20,
   },
   buttonText: {
     color: '#fff',

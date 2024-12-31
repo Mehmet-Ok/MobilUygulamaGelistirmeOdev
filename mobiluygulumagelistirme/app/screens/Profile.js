@@ -32,6 +32,8 @@ const Profile = ({ navigation }) => {
       const userDoc = await getDoc(userRef);
       if (userDoc.exists()) {
         setUserData(userDoc.data());
+        console.log(userData.age, "\n");
+        console.log(userData.months, "\n");
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -51,31 +53,32 @@ const Profile = ({ navigation }) => {
 
   const handleUpdate = async () => {
     try {
-        setLoading(true);
-        const currentUser = FIREBASE_AUTH.currentUser;
-        if (!currentUser) {
-            alert('Please login first');
-            navigation.replace('Login');
-            return;
-        }
+      setLoading(true);
+      const currentUser = FIREBASE_AUTH.currentUser;
+      if (!currentUser) {
+        alert('Please login first');
+        navigation.replace('Login');
+        return;
+      }
 
-        const { age, months } = calculateAgeAndMonths(userData.birthDate);
-        const updatedData = { ...userData, age, months };
+      const { age, months } = calculateAgeAndMonths(userData.birthDate);
+      const updatedData = { ...userData, age, months };
 
-        const userRef = doc(FIREBASE_DB, 'users', currentUser.uid);
-        await updateDoc(userRef, updatedData);
+      const userRef = doc(FIREBASE_DB, 'users', currentUser.uid);
+      await updateDoc(userRef, updatedData);
 
-        // Update local state with new data
-        setUserData(updatedData);
+      // Update local state with new data
+      setUserData(updatedData);
 
-        alert('Profile updated successfully');
+
+      alert('Profile updated successfully');
     } catch (error) {
-        console.error('Error updating profile:', error);
-        alert('Error updating profile');
+      console.error('Error updating profile:', error);
+      alert('Error updating profile');
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-};
+  };
 
   if (loading) {
     return (
@@ -87,22 +90,22 @@ const Profile = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Profile</Text>
+      <Text style={styles.title}>Profil</Text>
       <View style={styles.profileCard}>
         <TextInput
           style={styles.input}
-          placeholder="Name"
+          placeholder="Ad"
           value={userData.name}
           onChangeText={(text) => setUserData({ ...userData, name: text })}
         />
         <TextInput
           style={styles.input}
-          placeholder="Surname"
+          placeholder="Soyad"
           value={userData.surname}
           onChangeText={(text) => setUserData({ ...userData, surname: text })}
         />
         <TextInput
-          style={styles.input}
+          style={styles.inputMail }
           placeholder="Email"
           value={userData.email}
           onChangeText={(text) => setUserData({ ...userData, email: text })}
@@ -110,20 +113,34 @@ const Profile = ({ navigation }) => {
         />
         <TextInput
           style={styles.input}
-          placeholder="Birth Date (DD/MM/YYYY)"
+          placeholder="Doğum tarihi (DD/MM/YYYY)"
           value={userData.birthDate}
           onChangeText={(text) => setUserData({ ...userData, birthDate: text })}
         />
         <TextInput
           style={styles.input}
-          placeholder="Gender"
+          placeholder="Cinsiyet"
           value={userData.gender}
           onChangeText={(text) => setUserData({ ...userData, gender: text })}
         />
-        <Text>Age: {userData.age}</Text>
-        <Text>Months: {userData.months}</Text>
+        {/* <TextInput
+          style={styles.input}
+          placeholder="Age"
+          value={userData.age}
+          // onChangeText={(text) => setUserData({ ...userData, age: text })}
+          editable = {false}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Months"
+          value={userData.months}
+          // onChangeText={(text) => setUserData({ ...userData, months: text })}
+          editable={false} 
+        /> */}
+        <Text style={styles.textBox}>Yaş: {userData.age}</Text>
+        <Text style={styles.textBox}>Ay: {userData.months}</Text>
         <TouchableOpacity style={styles.button} onPress={handleUpdate}>
-          <Text style={styles.buttonText}>Update Profile</Text>
+          <Text style={styles.buttonText}>Profili güncelle</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -165,6 +182,16 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     backgroundColor: '#fff',
   },
+  inputMail: {
+    width: '100%',
+    height: 50,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    marginBottom: 15,
+    backgroundColor: '#d1d1d1',
+  },
   button: {
     backgroundColor: '#2196F3',
     padding: 15,
@@ -177,6 +204,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  textBox:{
+    fontSize: 16,
+    marginBottom: 15,
+    borderWidth:1,
+    borderRadius: 8,
+    backgroundColor: '#d1d1d1',
+    width: '100%',
+    height: 50,
+    justifyContent: 'center',
+    padding: 14,
+    borderColor: '#ddd',
+  }
 });
 
 export default Profile;

@@ -114,18 +114,18 @@ const GuidelineManager = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Add Guideline</Text>
-      <Text style={styles.label}>Age Range (e.g., 0-12 months)</Text>
+      <Text style={styles.title}>Kılavuz ekle</Text>
+      <Text style={styles.label}>Yaş Aralığı (Örnek: 0-12 ay)</Text>
       <View style={styles.row}>
         <View style={styles.ageRangeInputContainer}>
           <TextInput
             style={styles.ageRangeInput}
-            placeholder="e.g., 0-12 months"
+            placeholder="Örnek: 0-12 ay"
             value={ageRange}
             onChangeText={setAgeRange}
           />
           <TouchableOpacity style={styles.addButton} onPress={handleAddAgeRange}>
-            <Text style={styles.addButtonText}>Add</Text>
+            <Text style={styles.addButtonText}>Ekle</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -143,15 +143,15 @@ const GuidelineManager = () => {
           </View>
         ))}
       </View>
-      <Text style={styles.label}>Test Name</Text>
+      <Text style={styles.label}>Kılavuz adı</Text>
       <TextInput
         style={styles.input}
-        placeholder="Enter test name"
+        placeholder="Kılavuz adı"
         value={testName}
         onChangeText={setTestName}
       />
       <TouchableOpacity style={styles.button} onPress={handleAddGuideline}>
-        <Text style={styles.buttonText}>Add Guideline</Text>
+        <Text style={styles.buttonText}>Kılavuz ekle</Text>
       </TouchableOpacity>
       <View style={styles.guidelinesContainer}>
         {guidelines.map((guideline, index) => (
@@ -181,7 +181,7 @@ const GuidelineManager = () => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalView}>
-            <Text style={styles.modalTitle}>Enter Test Values</Text>
+            <Text style={styles.modalTitle}>Test değeri gir</Text>
             <ScrollView style={styles.modalScrollView}>
               <View style={styles.row}>
                 <View style={styles.column}>
@@ -338,7 +338,7 @@ const GuidelineManager = () => {
                 </View>
               </View>
               <TouchableOpacity style={styles.saveButton} onPress={handleSaveTestValues}>
-                <Text style={styles.saveButtonText}>Save</Text>
+                <Text style={styles.saveButtonText}>Kaydet</Text>
               </TouchableOpacity>
             </ScrollView>
           </View>

@@ -156,16 +156,16 @@ const PatientManagement = ({ navigation }) => {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Manage Patients</Text>
       
-      <Text style={styles.subtitle}>Assign Patient</Text>
+      
+      <Text style={styles.subtitle}>Hasta al</Text>
       <View style={styles.pickerContainer}>
         <Picker
           selectedValue={selectedPatient}
           onValueChange={setSelectedPatient}
           style={styles.picker}
         >
-          <Picker.Item label="Select Patient" value="" />
+          <Picker.Item label="Hasta seçin" value="" />
           {patients.map((patient) => (
             <Picker.Item 
               key={patient.id} 
@@ -180,17 +180,17 @@ const PatientManagement = ({ navigation }) => {
         onPress={handleAssignPatient}
         disabled={loading}
       >
-        <Text style={styles.buttonText}>Assign Patient</Text>
+        <Text style={styles.buttonText}>Kaydet</Text>
       </TouchableOpacity>
 
-      <Text style={styles.subtitle}>Unassign Patient</Text>
+      <Text style={styles.subtitle}>Hasta çıkar</Text>
       <View style={styles.pickerContainer}>
         <Picker
           selectedValue={selectedDoctorPatient}
           onValueChange={setSelectedDoctorPatient}
           style={styles.picker}
         >
-          <Picker.Item label="Select Patient" value="" />
+          <Picker.Item label="Hasta seçin" value="" />
           {doctorPatients.map((patient) => (
             <Picker.Item 
               key={patient.id} 
@@ -205,7 +205,7 @@ const PatientManagement = ({ navigation }) => {
         onPress={handleUnassignPatient}
         disabled={loading}
       >
-        <Text style={styles.buttonText}>Unassign Patient</Text>
+        <Text style={styles.buttonText}>Kaydet</Text>
       </TouchableOpacity>
     </ScrollView>
   );

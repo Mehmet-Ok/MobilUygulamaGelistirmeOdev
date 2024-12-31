@@ -167,12 +167,12 @@ const DoctorPanel = ({ navigation }) => {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Doctor Panel</Text>
+      <Text style={styles.title}>Doktor paneli</Text>
       <TouchableOpacity
         style={styles.refreshButton}
         onPress={() => fetchPatients(FIREBASE_AUTH.currentUser.uid)}
       >
-        <Text style={styles.refreshButtonText}>Refresh</Text>
+        <Text style={styles.refreshButtonText}>Yenile</Text>
       </TouchableOpacity>
 
       <View style={styles.pickerContainer}>
@@ -181,7 +181,7 @@ const DoctorPanel = ({ navigation }) => {
           onValueChange={handleGuidelineChange}
           style={styles.picker}
         >
-          <Picker.Item label="Select a Guideline" value="" />
+          <Picker.Item label="Bir kılavuz seçin" value="" />
           {guidelines.map((guideline) => (
             <Picker.Item
               key={guideline.id}
@@ -202,8 +202,8 @@ const DoctorPanel = ({ navigation }) => {
             onPress={() => handlePatientSelect(patient)}
           >
             <Text style={styles.patientName}>{`${patient.name} ${patient.surname}`}</Text>
-            <Text style={styles.patientInfo}>Age: {patient.age}</Text>
-            <Text style={styles.patientInfo}>Gender: {patient.gender}</Text>
+            <Text style={styles.patientInfo}>Yaş: {patient.age}</Text>
+            <Text style={styles.patientInfo}>Cinsiyet: {patient.gender}</Text>
           </TouchableOpacity>
         ))
       )}
@@ -222,7 +222,7 @@ const DoctorPanel = ({ navigation }) => {
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>
-                {`${selectedPatient.name} ${selectedPatient.surname}'s Results`}
+                {`${selectedPatient.name} ${selectedPatient.surname} Sonuçları`}
               </Text>
 
               <ScrollView style={styles.dateList}>

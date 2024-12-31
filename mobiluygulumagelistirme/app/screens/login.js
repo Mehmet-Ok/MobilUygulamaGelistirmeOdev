@@ -138,7 +138,7 @@ const Login = ({ navigation }) => {
     <View style={styles.container}>
       {!isRegistering ? (
         <>
-          <Text style={styles.title}>Login</Text>
+          <Text style={styles.title}>Giriş</Text>
           <TextInput
             style={styles.input}
             placeholder="Email"
@@ -160,19 +160,19 @@ const Login = ({ navigation }) => {
           ) : (
             <>
               <TouchableOpacity style={styles.button} onPress={signIn}>
-                <Text style={styles.buttonText}>Login</Text>
+                <Text style={styles.buttonText}>Giriş</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={[styles.button, styles.secondaryButton]} 
                 onPress={() => setIsRegistering(true)}>
-                <Text style={styles.buttonText}>Create Account</Text>
+                <Text style={styles.buttonText}>Hesap oluştur</Text>
               </TouchableOpacity>
             </>
           )}
         </>
       ) : (
         <>
-          <Text style={styles.title}>Register</Text>
+          <Text style={styles.title}>Kayıt ol</Text>
           <TextInput
             style={styles.input}
             placeholder="Email"
@@ -191,19 +191,19 @@ const Login = ({ navigation }) => {
           />
           <TextInput
             style={styles.input}
-            placeholder="Name"
+            placeholder="Ad"
             onChangeText={setName}
             value={name}
           />
           <TextInput
             style={styles.input}
-            placeholder="Surname"
+            placeholder="Soyad"
             onChangeText={setSurname}
             value={surname}
           />
           <TextInput
             style={styles.input}
-            placeholder="Gender (M/F)"
+            placeholder="Cinsiyet (M/F)"
             onChangeText={setGender}
             value={gender}
             maxLength={1}
@@ -211,7 +211,7 @@ const Login = ({ navigation }) => {
           />
           <TextInput
             style={styles.input}
-            placeholder="Birth Date (DD/MM/YYYY)"
+            placeholder="Doğum tarihi (DD/MM/YYYY)"
             onChangeText={setBirthDate}
             value={birthDate}
             keyboardType="numeric"
@@ -221,12 +221,12 @@ const Login = ({ navigation }) => {
           ) : (
             <>
               <TouchableOpacity style={styles.button} onPress={signUp}>
-                <Text style={styles.buttonText}>Register</Text>
+                <Text style={styles.buttonText}>Kayıt ol</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={[styles.button, styles.secondaryButton]} 
                 onPress={() => setIsRegistering(false)}>
-                <Text style={styles.buttonText}>Back to Login</Text>
+                <Text style={styles.buttonText}>Girişe dön</Text>
               </TouchableOpacity>
             </>
           )}

@@ -69,7 +69,7 @@ const List = () => {
             <View key={key} style={styles.row}>
               <Text style={styles.label}>{key}</Text>
               <Text style={styles.value}>{value} g/L</Text>
-              <Text style={styles.value}>sa</Text>
+              {/* <Text style={styles.value}>sa</Text> */}
             </View>
           ))}
       </View>
@@ -86,7 +86,7 @@ const List = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Lab Results</Text>
+      <Text style={styles.title}>Tahlil sonuçları</Text>
       <FlatList
         data={labResults}
         renderItem={renderItem}
@@ -95,7 +95,7 @@ const List = () => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListEmptyComponent={
-          <Text style={styles.noResults}>No lab results available</Text>
+          <Text style={styles.noResults}>Tahlil sonucu yok</Text>
         }
       />
     </View>

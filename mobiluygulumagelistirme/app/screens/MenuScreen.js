@@ -20,31 +20,31 @@ const MenuScreen = ({ navigation }) => {
         style={styles.menuItem}
         onPress={() => navigation.navigate('AdminPanel')}
       >
-        <Text style={styles.menuText}>Enter Lab Values</Text>
+        <Text style={styles.menuText}>Tahlil sonucu gir</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.menuItem}
         onPress={() => navigation.navigate('PatientManagement')}
       >
-        <Text style={styles.menuText}>Manage Patients</Text>
+        <Text style={styles.menuText}>Hasta yönetimi</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.menuItem}
         onPress={() => navigation.navigate('DoctorPanel')}
       >        
-        <Text style={styles.menuText}>Doctor Panel</Text>
+        <Text style={styles.menuText}>Doktor paneli</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.menuItem}
         onPress={() => navigation.navigate('GuidelineProcessMenuScreen')}
       >
-        <Text style={styles.menuText}>Guideline Process</Text>
+        <Text style={styles.menuText}>Kılavuz yönetimi</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.menuItemLogout}
         onPress={handleLogout}
       >
-        <Text style={styles.menuText}>Logout</Text>
+        <Text style={styles.menuText}>Çıkış</Text>
       </TouchableOpacity>
     </View>
   );
